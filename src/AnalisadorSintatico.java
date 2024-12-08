@@ -36,20 +36,15 @@ public class AnalisadorSintatico {
         try {
             String content = new String(Files.readAllBytes(file.toPath()));
 
-            // Instancia a tabela de símbolos
             TabelaSimbolos tabelaSimbolos = new TabelaSimbolos();
 
-            // Instancia o analisador léxico
             AnalisadorLexico analisadorLexico = new AnalisadorLexico(content, tabelaSimbolos);
 
-            // Analisa o conteúdo
             List<Atomo> listaAtomos = analisadorLexico.analisar();
 
-            // Gera o relatório da análise léxica
-            gerarRelatorioLexico(listaAtomos, tabelaSimbolos, inputName);
+            gerarRelatorioLexico(listaAtomos, tabelaSimbolos, fileName);
 
-            // Gera o relatório da tabela de símbolos
-            gerarRelatorioTabelaSimbolos(tabelaSimbolos, inputName);
+            gerarRelatorioTabelaSimbolos(tabelaSimbolos, fileName);
 
             System.out.println("Análise concluída com sucesso para o arquivo: " + file.getName());
         } catch (IOException e) {
@@ -68,13 +63,19 @@ public class AnalisadorSintatico {
     private static void gerarRelatorioLexico(List<Atomo> listaAtomos,
                                              TabelaSimbolos tabelaSimbolos, String nomeArquivo) {
 
-        // Informações da equipe
-        String codigoEquipe = "Equipe 42";
-        String[] nomesMembros = {"Alice", "Bob", "Charlie"};
-        String[] emailsMembros = {"alice@example.com",
-                "bob@example.com", "charlie@example.com"};
-        String[] telefonesMembros = {"(11) 99999-1111",
-                "(11) 99999-2222", "(11) 99999-3333"};
+        String codigoEquipe = "EQ08";
+        String[] nomesMembros = {"Cauã Vivas Martins da Cruz",
+                                 "Guilherme Santos Ferreira",
+                                 "João Marcos Gatis Araujo Silva",
+                                 "Vinicius dos Santos Candeia"};
+        String[] emailsMembros = {"caua.cruz@ucsal.edu.br",
+                                  "guilherme,ferreira@ucsal.edu.br",
+                                  "joaomg.silva@ucsal.edu.br",
+                                  "vinicius.candeias@ucsal.edu.br"};
+        String[] telefonesMembros = {"71 9 9279-6647",
+                                     "71 9 9630-4941",
+                                     "71 9 9900-9154",
+                                     "71 9 8435-3370"};
 
         String nomeArquivoLex = nomeArquivo.replace(".242", ".LEX");
 
@@ -92,21 +93,17 @@ public class AnalisadorSintatico {
             writer.write("RELATÓRIO DA ANÁLISE LÉXICA\n");
             writer.write("Arquivo analisado: " + nomeArquivo + "\n\n");
 
-            // Corpo do relatório
             for (Atomo atomo : listaAtomos) {
                 String lexema = atomo.getLexema();
                 String codigoAtomo = atomo.getCodigo();
 
-                // Verifica se o lexema está na tabela de símbolos
                 Simbolo simbolo = tabelaSimbolos.getSimbolo(lexema);
                 String indiceTabela = simbolo != null
                         ? String.valueOf(simbolo.getNumeroEntrada())
-                        : "-";
+                        : "N/A";
 
-                // Linha onde o lexema foi encontrado
                 int linha = atomo.getLinha();
 
-                // Escreve a linha do relatório
                 writer.write("Lexema: " + lexema + ", Código: "
                         + codigoAtomo + ", Índice: " + indiceTabela
                         + ", Linha: " + linha + "\n");
@@ -121,12 +118,6 @@ public class AnalisadorSintatico {
         }
     }
 
-    /**
-     * Gera o relatório da tabela de símbolos e salva em um arquivo .TAB.
-     *
-     * @param tabelaSimbolos Tabela de símbolos preenchida.
-     * @param nomeArquivo    Nome do arquivo fonte analisado.
-     */
     private static void gerarRelatorioTabelaSimbolos(
             TabelaSimbolos tabelaSimbolos, String nomeArquivo) {
 
@@ -135,11 +126,9 @@ public class AnalisadorSintatico {
         try (BufferedWriter writer = new BufferedWriter(
                 new FileWriter(nomeArquivoTab))) {
 
-            // Cabeçalho
             writer.write("RELATÓRIO DA TABELA DE SÍMBOLOS\n");
             writer.write("Arquivo analisado: " + nomeArquivo + "\n\n");
 
-            // Corpo do relatório
             for (Simbolo simbolo : tabelaSimbolos.getSimbolos()) {
                 writer.write("Número de Entrada: "
                         + simbolo.getNumeroEntrada() + "\n");
