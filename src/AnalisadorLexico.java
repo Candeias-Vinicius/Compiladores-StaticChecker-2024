@@ -60,6 +60,11 @@ public class AnalisadorLexico {
         int tamanhoAntesTruncagem = 0;
 
         while (posicao < conteudo.length() && (Character.isLetterOrDigit(conteudo.charAt(posicao)) || conteudo.charAt(posicao) == '_' || ehCaractereInvalido(conteudo.charAt(posicao)))) {
+            if(posicao != 0){
+                if(!lexemaValido(lexemaBuilder.toString()+conteudo.charAt(posicao))){
+                    break;
+                }
+            }
             filtroPrimeiroNivel(conteudo.charAt(posicao));
             if(Character.isWhitespace(conteudo.charAt(posicao))){
                 break;
@@ -67,11 +72,13 @@ public class AnalisadorLexico {
             if (posicao >= conteudo.length()) {
                 break;
             }
+
             tamanhoAntesTruncagem++;
             if (contadorCaracteres < LIMITE_ATOMO) {
                 lexemaBuilder.append(conteudo.charAt(posicao));
                 contadorCaracteres++;
             }
+
             posicao++;
         }
 
@@ -85,6 +92,10 @@ public class AnalisadorLexico {
 
 
         return processarIdentificador(lexema, tamanhoAntesTruncagem, tamanhoDepoisTruncagem);
+    }
+
+    private boolean lexemaValido(String lexema) {
+        return RegexValidators.isNomPrograma(lexema) || RegexValidators.isNomFuncao(lexema) || RegexValidators.isVariavel(lexema) || TabelaReservadas.getCodigoAtomo(lexema) != null || RegexValidators.isConsInteiro(lexema) || RegexValidators.isConsReal(lexema) || RegexValidators.isConsCadeia(lexema) || RegexValidators.isConsCaracter(lexema);
     }
 
     private Atomo processarIdentificador(String lexema, int tamanhoAntesTruncagem, int tamanhoDepoisTruncagem) {
@@ -116,6 +127,11 @@ public class AnalisadorLexico {
 
         while (posicao < conteudo.length() && (Character.isDigit(conteudo.charAt(posicao)) || ehCaractereInvalido(conteudo.charAt(posicao)))) {
             filtroPrimeiroNivel(conteudo.charAt(posicao));
+            if(posicao != 0){
+                if(!lexemaValido(lexemaBuilder.toString()+conteudo.charAt(posicao))){
+                    break;
+                }
+            }
             if(Character.isWhitespace(conteudo.charAt(posicao))){
                 break;
             }
@@ -262,16 +278,19 @@ public class AnalisadorLexico {
                 tamanhoAntesTruncagem++;
                 lexemaBuilder.append('\'');
                 posicao++;
-
-                String lexemaStr = lexemaBuilder.toString();
-                int tamanhoDepoisTruncagem = lexemaStr.length();
-
-                if (RegexValidators.isConsCaracter(lexemaStr)) {
-                    tabelaSimbolos.adicionarOuAtualizarSimbolo("C02", lexemaStr, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, "constanteCaracter", linhaAtual);
-                    return new Atomo("C02", lexemaStr, linhaAtual);
-                } else {
-                    return null;
+            } else {
+                lexemaBuilder.append('\'');
+                while (posicao < conteudo.length()) {
+                    posicao++;
                 }
+            }
+
+            String lexemaStr = lexemaBuilder.toString();
+            int tamanhoDepoisTruncagem = lexemaStr.length();
+
+            if (RegexValidators.isConsCaracter(lexemaStr)) {
+                tabelaSimbolos.adicionarOuAtualizarSimbolo("C02", lexemaStr, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, "constanteCaracter", linhaAtual);
+                return new Atomo("C02", lexemaStr, linhaAtual);
             } else {
                 return null;
             }
