@@ -4,6 +4,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -12,7 +13,7 @@ public class AnalisadorSintatico {
     public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Digite o nome do arquivo fonte (sem extensão .242): ");
+        System.out.print("Digite o nome do arquivo fonte (com ou sem extensão .242): ");
         String inputName = scanner.nextLine().trim();
         scanner.close();
 
@@ -37,10 +38,10 @@ public class AnalisadorSintatico {
             String content = new String(Files.readAllBytes(file.toPath()));
 
             TabelaSimbolos tabelaSimbolos = new TabelaSimbolos();
+            TabelaReservadas tabelaReservadas = new TabelaReservadas();
 
-            AnalisadorLexico analisadorLexico = new AnalisadorLexico(content, tabelaSimbolos);
-
-            List<Atomo> listaAtomos = analisadorLexico.analisar();
+            AnalisadorSintatico analisador = new AnalisadorSintatico();
+            List<Atomo> listaAtomos = analisador.analisar(content, tabelaSimbolos, tabelaReservadas);
 
             gerarRelatorioLexico(listaAtomos, tabelaSimbolos, fileName);
 
@@ -53,13 +54,6 @@ public class AnalisadorSintatico {
         }
     }
 
-    /**
-     * Gera o relatório da análise léxica e salva em um arquivo .LEX.
-     *
-     * @param listaAtomos    Lista de átomos identificados.
-     * @param tabelaSimbolos Tabela de símbolos preenchida.
-     * @param nomeArquivo    Nome do arquivo fonte analisado.
-     */
     private static void gerarRelatorioLexico(List<Atomo> listaAtomos,
                                              TabelaSimbolos tabelaSimbolos, String nomeArquivo) {
 
@@ -153,5 +147,18 @@ public class AnalisadorSintatico {
             System.err.println("Erro ao gerar o relatório da tabela de símbolos: "
                     + e.getMessage());
         }
+    }
+
+    public List<Atomo> analisar(String content, TabelaSimbolos tabelaSimbolos,
+                                 TabelaReservadas tabelaReservadas) {
+        AnalisadorLexico analisadorLexico = new AnalisadorLexico(content, tabelaSimbolos, tabelaReservadas);
+        int posicao = 0;
+        List<Atomo> listaAtomos = new ArrayList<>();
+        Atomo atomo;
+        while ((atomo = analisadorLexico.getAtomo(posicao)) != null) {
+            posicao = atomo.getPosicao();
+            listaAtomos.add(atomo);
+        }
+        return listaAtomos;
     }
 }

@@ -32,9 +32,5 @@ public class TabelaSimbolos {
         return simbolos.values();
     }
 
-    public void imprimirTabela() {
-        for (Simbolo simbolo : simbolos.values()) {
-            System.out.println(simbolo);
-        }
     }
 }

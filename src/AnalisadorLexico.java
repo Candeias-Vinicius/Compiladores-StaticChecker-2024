@@ -8,16 +8,19 @@ public class AnalisadorLexico {
 
     private TabelaSimbolos tabelaSimbolos;
 
+    private TabelaReservadas tabelaReservadas;
+
     public static final int LIMITE_ATOMO = 30;
 
-    public AnalisadorLexico(String conteudo, TabelaSimbolos tabelaSimbolos) {
+    public AnalisadorLexico(String conteudo, TabelaSimbolos tabelaSimbolos,TabelaReservadas tabelaReservadas) {
         this.conteudo = conteudo.toUpperCase();
-        this.posicao = 0;
         this.linhaAtual = 1;
         this.tabelaSimbolos = tabelaSimbolos;
+        this.tabelaReservadas = tabelaReservadas;
     }
 
-    public Atomo getAtomo() {
+    public Atomo getAtomo(int posicaoAtual) {
+        posicao = posicaoAtual;
         while (posicao < conteudo.length()) {
             char atual = conteudo.charAt(posicao);
 
@@ -84,10 +87,9 @@ public class AnalisadorLexico {
 
         String lexema = lexemaBuilder.toString();
         int tamanhoDepoisTruncagem = lexema.length();
-        String codigoAtomo = TabelaReservadas.getCodigoAtomo(lexema);
 
-        if (codigoAtomo != null) {
-            return new Atomo(codigoAtomo, lexema, linhaAtual);
+        if (tabelaReservadas.isReservada(lexema)) {
+            return new Atomo(tabelaReservadas.getCodigoAtomo(lexema), lexema, linhaAtual, posicao);
         }
 
 
@@ -95,7 +97,7 @@ public class AnalisadorLexico {
     }
 
     private boolean lexemaValido(String lexema) {
-        return RegexValidators.isNomPrograma(lexema) || RegexValidators.isNomFuncao(lexema) || RegexValidators.isVariavel(lexema) || TabelaReservadas.getCodigoAtomo(lexema) != null || RegexValidators.isConsInteiro(lexema) || RegexValidators.isConsReal(lexema) || RegexValidators.isConsCadeia(lexema) || RegexValidators.isConsCaracter(lexema);
+        return RegexValidators.isNomPrograma(lexema) || RegexValidators.isNomFuncao(lexema) || RegexValidators.isVariavel(lexema) || tabelaReservadas.isReservada(lexema) || RegexValidators.isConsInteiro(lexema) || RegexValidators.isConsReal(lexema) || RegexValidators.isConsCadeia(lexema) || RegexValidators.isConsCaracter(lexema);
     }
 
     private Atomo processarIdentificador(String lexema, int tamanhoAntesTruncagem, int tamanhoDepoisTruncagem) {
@@ -116,7 +118,7 @@ public class AnalisadorLexico {
         }
 
         tabelaSimbolos.adicionarOuAtualizarSimbolo(codigoIdentificador, lexema, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, tipoSimbolo, linhaAtual);
-        return new Atomo(codigoIdentificador, lexema, linhaAtual);
+        return new Atomo(codigoIdentificador, lexema, linhaAtual, posicao);
     }
 
     private Atomo processarNumero() {
@@ -174,7 +176,7 @@ public class AnalisadorLexico {
     private Atomo processarNumeroReal(String lexemaStr, int tamanhoAntesTruncagem, int tamanhoDepoisTruncagem) {
         if (RegexValidators.isConsReal(lexemaStr)) {
             tabelaSimbolos.adicionarOuAtualizarSimbolo("C04", lexemaStr, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, "constanteReal", linhaAtual);
-            return new Atomo("C04", lexemaStr, linhaAtual);
+            return new Atomo("C04", lexemaStr, linhaAtual, posicao);
         } else {
             return null;
         }
@@ -183,7 +185,7 @@ public class AnalisadorLexico {
     private Atomo processarNumeroInteiro(String lexemaStr, int tamanhoAntesTruncagem, int tamanhoDepoisTruncagem) {
         if (RegexValidators.isConsInteiro(lexemaStr)) {
             tabelaSimbolos.adicionarOuAtualizarSimbolo("C03", lexemaStr, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, "constanteInteira", linhaAtual);
-            return new Atomo("C03", lexemaStr, linhaAtual);
+            return new Atomo("C03", lexemaStr, linhaAtual, posicao);
         } else {
             return null;
         }
@@ -255,7 +257,7 @@ public class AnalisadorLexico {
 
         if (RegexValidators.isConsCadeia(lexemaStr)) {
             tabelaSimbolos.adicionarOuAtualizarSimbolo("C01", lexemaStr, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, "constanteCadeia", linhaAtual);
-            return new Atomo("C01", lexemaStr, linhaAtual);
+            return new Atomo("C01", lexemaStr, linhaAtual, posicao);
         } else {
             return null;
         }
@@ -290,7 +292,7 @@ public class AnalisadorLexico {
 
             if (RegexValidators.isConsCaracter(lexemaStr)) {
                 tabelaSimbolos.adicionarOuAtualizarSimbolo("C02", lexemaStr, tamanhoAntesTruncagem, tamanhoDepoisTruncagem, "constanteCaracter", linhaAtual);
-                return new Atomo("C02", lexemaStr, linhaAtual);
+                return new Atomo("C02", lexemaStr, linhaAtual, posicao);
             } else {
                 return null;
             }
@@ -302,10 +304,10 @@ public class AnalisadorLexico {
     private Atomo processarSimbolo(char atual) {
 
         String simbolo = String.valueOf(atual);
-        String codigoAtomo = TabelaReservadas.getCodigoAtomo(simbolo);
-        if (codigoAtomo != null) {
+
+        if (tabelaReservadas.isReservada(simbolo)) {
             posicao++;
-            return new Atomo(codigoAtomo, simbolo, linhaAtual);
+            return new Atomo(tabelaReservadas.getCodigoAtomo(simbolo), simbolo, linhaAtual,posicao);
         } else {
             filtroPrimeiroNivel(atual);
             return null;
@@ -341,11 +343,6 @@ public class AnalisadorLexico {
         }
     }
 
-    private boolean ehSimboloReservado(char c) {
-        String codigo = TabelaReservadas.getCodigoAtomo(String.valueOf(c));
-        return codigo != null;
-    }
-
     private boolean ehCaractereInvalido(char c) {
         if (Character.isWhitespace(c) || c == '\n') {
             return false;
@@ -359,7 +356,7 @@ public class AnalisadorLexico {
             return false;
         }
 
-        if (ehSimboloReservado(c)) {
+        if (tabelaReservadas.isReservada(String.valueOf(c))) {
             return false;
         }
 
@@ -405,12 +402,5 @@ public class AnalisadorLexico {
         }
         return false;
     }
-    public List<Atomo> analisar() {
-        List<Atomo> listaAtomos = new ArrayList<>();
-        Atomo atomo;
-        while ((atomo = getAtomo()) != null) {
-            listaAtomos.add(atomo);
-        }
-        return listaAtomos;
-    }
+
 }

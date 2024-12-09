@@ -5,12 +5,12 @@ public class TabelaReservadas {
 
     private static Map<String, String> tabelaReservadas;
 
-    static {
+    public TabelaReservadas() {
         tabelaReservadas = new HashMap<>();
         inicializarTabelaReservadas();
     }
 
-    private static void inicializarTabelaReservadas() {
+    private void inicializarTabelaReservadas() {
 
         tabelaReservadas.put("CADEIA", "A01");
         tabelaReservadas.put("CARACTER", "A02");
@@ -39,7 +39,6 @@ public class TabelaReservadas {
         tabelaReservadas.put("TRUE", "A25");
         tabelaReservadas.put("VAZIO", "A26");
 
-        // Adicionando os símbolos
         tabelaReservadas.put("%", "B01");
         tabelaReservadas.put("&", "B02");
         tabelaReservadas.put("/", "B03");
@@ -60,11 +59,11 @@ public class TabelaReservadas {
 
     }
 
-    public static String getCodigoAtomo(String lexema) {
+    public String getCodigoAtomo(String lexema) {
         return tabelaReservadas.get(lexema);
     }
 
-    public static boolean isReservada(String lexema) {
+    public boolean isReservada(String lexema) {
         return tabelaReservadas.containsKey(lexema);
     }
 }
