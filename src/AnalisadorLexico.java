@@ -63,12 +63,13 @@ public class AnalisadorLexico {
         int tamanhoAntesTruncagem = 0;
 
         while (posicao < conteudo.length() && (Character.isLetterOrDigit(conteudo.charAt(posicao)) || conteudo.charAt(posicao) == '_' || ehCaractereInvalido(conteudo.charAt(posicao)))) {
+            filtroPrimeiroNivel(conteudo.charAt(posicao));
             if(posicao != 0){
                 if(!lexemaValido(lexemaBuilder.toString()+conteudo.charAt(posicao))){
                     break;
                 }
             }
-            filtroPrimeiroNivel(conteudo.charAt(posicao));
+
             if(Character.isWhitespace(conteudo.charAt(posicao))){
                 break;
             }
